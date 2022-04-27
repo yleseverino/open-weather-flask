@@ -2,3 +2,5 @@ Flask
 Flask-Limiter
 cachetools
 python-dotenv
+pydantic
+requests
