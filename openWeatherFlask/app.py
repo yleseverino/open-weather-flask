@@ -4,8 +4,15 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 import datetime
 from cachetools import TTLCache
-import config
 
+from models import City, CityTemp
+from util import get_openWeatherData
+
+OPEN_WEATHER_API_KEY = environ.get('OPEN_WEATHER_API_KEY')
+
+if not OPEN_WEATHER_API_KEY:
+    print('ENV variable OPEN_WEATHER_API_KEY not founded')
+    exit(1)
 
 CACHE_TTL = int(environ.get('CACHE_TTL', 300))
 DEFAULT_MAX_NUMBER = environ.get('DEFAULT_MAX_NUMBER', 5)
@@ -24,7 +31,7 @@ match APPLICATION_MODE:
         app.config.from_object('config.ProductionConfig')
 
 
-cache = TTLCache(maxsize=10, ttl=CACHE_TTL)
+cache = TTLCache(maxsize=200, ttl=CACHE_TTL)
 limiter = Limiter(
     app,
     default_limits=[f'{DEFAULT_MAX_NUMBER} per minute'],
@@ -35,8 +42,12 @@ limiter = Limiter(
 @app.route('/<city_name>')
 @app.route('/')
 def hello(city_name = None):
+
     if not city_name:
-        print(cache)
         return 'tess'
-    cache[city_name] = 25
-    return f'100'
+
+    city_name = city_name.strip().capitalize() # Format the city string name
+    if city_name not in cache:
+        cache[city_name] = get_openWeatherData(api_key = OPEN_WEATHER_API_KEY, city_name = city_name)
+    
+    return cache[city_name].json()
