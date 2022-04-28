@@ -1,11 +1,11 @@
 from os import environ
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
-import datetime
 from cachetools import TTLCache
 
-from models import City, CityTemp
+from copy import deepcopy
+
 from util import get_openWeatherData
 
 OPEN_WEATHER_API_KEY = environ.get('OPEN_WEATHER_API_KEY')
@@ -15,6 +15,8 @@ if not OPEN_WEATHER_API_KEY:
     exit(1)
 
 CACHE_TTL = int(environ.get('CACHE_TTL', 300))
+RATE_LIMIT = environ.get('RATE_LIMIT', 100)
+
 DEFAULT_MAX_NUMBER = environ.get('DEFAULT_MAX_NUMBER', 5)
 APPLICATION_MODE = environ.get('APPLICATION_MODE', 'PRD')
 
@@ -44,7 +46,20 @@ limiter = Limiter(
 def hello(city_name = None):
 
     if not city_name:
-        return 'tess'
+        cache.expire()  # method that delete the cached data that is no longer valid
+
+        list_data = []
+        max_itens = min( int( request.args.get('max', DEFAULT_MAX_NUMBER ) ), cache.currsize ) # First is checked if the the GET param 'max' is being send, if not a DEFAULT_MAX_NUMBER defined by env variables is used istead, and finaly is compare that number with the lenght of the cache and get the min value between the two
+        i = 1                       
+        for key in cache: 
+            list_data.append(cache[key].dict())
+            if i == max_itens:
+                break
+            i += 1
+        list_data.reverse()
+        
+        return { 'cities_cached' : list_data}
+
 
     city_name = city_name.strip().capitalize() # Format the city string name
     if city_name not in cache:
