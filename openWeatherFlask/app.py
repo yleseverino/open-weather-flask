@@ -1,17 +1,18 @@
 from os import environ
+import logging
 from flask import Flask, request, make_response
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from cachetools import TTLCache
 import requests
 
-from util import get_openWeatherData
-from exceptions import CityNotFounded, InvalidAPIKey, RateLimit
+from openWeatherFlask.util import get_openWeatherData
+from openWeatherFlask.exceptions import CityNotFounded, InvalidAPIKey, RateLimit
 
 OPEN_WEATHER_API_KEY = environ.get('OPEN_WEATHER_API_KEY')
 
 if not OPEN_WEATHER_API_KEY:
-    print('ENV variable OPEN_WEATHER_API_KEY not founded')
+    logging.exception("ENV variable OPEN_WEATHER_API_KEY not founded")
     exit(1)
 
 CACHE_TTL = int(environ.get('CACHE_TTL', 300))
@@ -24,13 +25,13 @@ app = Flask(__name__)
 
 match APPLICATION_MODE:
     case 'DEV':
-        app.config.from_object('config.DevelopmentConfig')
+        app.config.from_object('openWeatherFlask.config.DevelopmentConfig')
         pass
     case 'TEST':
-        app.config.from_object('config.TestingConfig')
+        app.config.from_object('openWeatherFlask.config.TestingConfig')
         pass
     case 'PRD':
-        app.config.from_object('config.ProductionConfig')
+        app.config.from_object('openWeatherFlask.config.ProductionConfig')
 
 
 cache = TTLCache(maxsize=200, ttl=CACHE_TTL)
@@ -75,7 +76,7 @@ def hello(city_name = None):
             return {'code': 500, 'message' : str(err)}, 500
         
     
-    return cache[city_name].json()
+    return cache[city_name].dict()
 
 @app.errorhandler(429)
 def ratelimit_handler(e):

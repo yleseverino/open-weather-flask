@@ -1,8 +1,9 @@
 import requests
-from models import City, CityTemp
-from alpha2_to_alpha3 import alpha2_to_alpha3
-from exceptions import CityNotFounded, InvalidAPIKey, RateLimit
 import logging
+
+from openWeatherFlask.models import City, CityTemp
+from openWeatherFlask.alpha2_to_alpha3 import alpha2_to_alpha3
+from openWeatherFlask.exceptions import CityNotFounded, InvalidAPIKey, RateLimit
 
 
 def get_openWeatherData(api_key : str, city_name : str) -> type[CityTemp]:
@@ -56,7 +57,7 @@ def convert_openWeather_data_to_cityTemp( response : dict ) -> type[CityTemp]:
                     cityTemp (CityTemp): An object define by models CityTemp
     
     '''
-    city = City(    id = response['sys']['id'], 
+    city = City( 
                         name = response['name'], 
                         country = alpha2_to_alpha3[ response['sys']['country'] ]
                         )
