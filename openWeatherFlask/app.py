@@ -1,10 +1,8 @@
 from os import environ
-from flask import Flask, jsonify, request
+from flask import Flask, request
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from cachetools import TTLCache
-
-from copy import deepcopy
 
 from util import get_openWeatherData
 
