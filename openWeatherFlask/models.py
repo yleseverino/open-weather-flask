@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from datetime import datetime
 
 
 class City(BaseModel):
@@ -13,7 +14,4 @@ class CityTemp(BaseModel):
     avg: float
     feels_like: float
     city: City
-
-
-a = City(id= 1, name = 'uberaba', country = 'BR')
-b = CityTemp(id = 1, min = 20.05, max = 45.12, avg = 52.31, feels_like = 25.25, city = a)
+    timestamp: datetime = datetime.now()
