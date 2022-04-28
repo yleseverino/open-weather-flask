@@ -9,4 +9,3 @@ class DevelopmentConfig(Config):
 
 class TestingConfig(Config):
     TESTING = True
-    RATELIMIT_ENABLED = False
