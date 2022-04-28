@@ -1,10 +1,10 @@
 from pydantic import BaseModel, ValidationError, validator
 from datetime import datetime
-from alpha2_to_alpha3 import alpha2_to_alpha3
+
+from openWeatherFlask.alpha2_to_alpha3 import alpha2_to_alpha3
 
 
 class City(BaseModel):
-    id: int
     name: str
     country: str
 
