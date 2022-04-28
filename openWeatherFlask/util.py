@@ -1,6 +1,8 @@
 import requests
 from models import City, CityTemp
 from alpha2_to_alpha3 import alpha2_to_alpha3
+from exceptions import CityNotFounded, InvalidAPIKey, RateLimit
+import logging
 
 
 def get_openWeatherData(api_key : str, city_name : str) -> type[CityTemp]:
@@ -16,12 +18,61 @@ def get_openWeatherData(api_key : str, city_name : str) -> type[CityTemp]:
     '''
 
     query_string = {'q' : city_name, 'appid'  : api_key, 'units' : 'metric'}
-    r = requests.get('https://api.openweathermap.org/data/2.5/weather', params = query_string)
 
-    res = r.json()
-    city = City(id = res['sys']['id'], name = city_name, country = alpha2_to_alpha3[ res['sys']['country'] ])
-    cityTemp_model = CityTemp(id = res['id'], min = res['main']['temp_min'], max = res['main']['temp_max'], avg = res['main']['temp'], feels_like = res['main']['feels_like'], city = city)
+    try :
+        response = requests.get('https://api.openweathermap.org/data/2.5/weather', params = query_string)
+
+    except requests.exceptions.RequestException as err:
+        logging.exception(f"FAILED TO ESTABLISH THE CONNECTION to OpenWeatherAPI ERROR ({str(err)})")
+        raise requests.exceptions.RequestException(f'FAILED TO ESTABLISH THE CONNECTION to OpenWeatherAPI ERROR ({str(err)})')
+
+    if response.ok:
+
+        return convert_openWeather_data_to_cityTemp(response.json())
+    
+    else:
+        
+        match response.status_code:
+            case 404:
+                logging.exception(f"City not founded in OpenWeatherAPI got HTTP code {response.status_code} return '{ response.text }'")
+                raise CityNotFounded(response.json()['message'])
+            case 401:
+                logging.exception(f"INVALID API KEY ERROR the request to OpenWeatherAPI got HTTP code {response.status_code} return '{ response.text }'")
+                raise InvalidAPIKey(response.json()['message'])
+            case 429:
+                logging.exception(f"RATE LIMIT ERROR the request to OpenWeatherAPI got HTTP code {response.status_code} return '{ response.text }'")
+                raise RateLimit(response.json()['message'])
+            case _:
+                logging.exception(f"FAILED REQUEST to OpenWeatherAPI got HTTP code {response.status_code} return '{ response.text }'")
+                raise ConnectionError('Internal error in OpenWeatherApi')
+
+def convert_openWeather_data_to_cityTemp( response : dict ) -> type[CityTemp]:
+    '''A function that get the dict response of the API OpenWeather and convert the data to CityTemp Model
+
+        Parameters:
+                    response (dict): The response of the api openWeather
+
+            Returns:
+                    cityTemp (CityTemp): An object define by models CityTemp
+    
+    '''
+    city = City(    id = response['sys']['id'], 
+                        name = response['name'], 
+                        country = alpha2_to_alpha3[ response['sys']['country'] ]
+                        )
+
+    cityTemp_model = CityTemp(  id = response['id'], 
+                                    min = response['main']['temp_min'], 
+                                    max = response['main']['temp_max'], 
+                                    avg = response['main']['temp'], 
+                                    feels_like = response['main']['feels_like'], 
+                                    city = city
+                                    )
+    
     return cityTemp_model
+
+        
+
 
 
 
