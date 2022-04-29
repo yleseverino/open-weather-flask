@@ -4,3 +4,4 @@ cachetools
 python-dotenv
 pydantic
 requests
+uwsgi
