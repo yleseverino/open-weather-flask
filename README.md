@@ -2,6 +2,12 @@
 
 A wrapper for the Open Weather API that returns a city's temperature
 
+## Hosted
+
+The app is hosted in the IBM Cloud with Cloud foundry whith is a platform as a service (PaaS) architecture tool very much like Heroku.
+
+endpoind link: [openweatherflask.mybluemix.net](https://openweatherflask.mybluemix.net)
+
 
 ## Geting stated
 1. Fetch from repo:
