@@ -37,7 +37,7 @@ match APPLICATION_MODE:
 cache = TTLCache(maxsize=200, ttl=CACHE_TTL)
 limiter = Limiter(
     app,
-    default_limits=[f'{DEFAULT_MAX_NUMBER} per minute'],
+    default_limits=[f'{RATE_LIMIT} per minute'],
     key_func=get_remote_address
     )
 
