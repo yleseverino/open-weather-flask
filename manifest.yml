@@ -1,0 +1,9 @@
+version: 1
+applications:
+  - name: openWeatherFlask
+    routes:
+    - route: openWeatherFlask.mybluemix.net 
+    memory: 128MB
+    command: uwsgi flask.ini
+    services:
+    - my-logs

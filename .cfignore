@@ -1,0 +1,10 @@
+tests/
+htmlcov
+env/
+.env
+.env.example
+README.md
+requirements_tests.txt
+.pytest_cache
+__pycache__
+
